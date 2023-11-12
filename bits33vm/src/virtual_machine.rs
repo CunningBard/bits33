@@ -1,7 +1,10 @@
 use bits33core::instructions::{Instruction, MathOp, Operation1, Operation2, OpType, Value};
-struct VirtualMachine {
-    registers: [u32; 32],
-    memory: [u8; 1024],
+
+
+#[derive(Debug)]
+pub struct VirtualMachine {
+    registers: [u32; 8],
+    memory: [u8; 32],
     instruction_pointer: u32,
     instructions: Vec<Instruction>,
 }
@@ -14,152 +17,102 @@ impl VirtualMachine {
         new_instructions.append(&mut instructions);
 
         VirtualMachine {
-            registers: [0; 32],
-            memory: [0; 1024],
+            registers: Default::default(),
+            memory: Default::default(),
             instruction_pointer: 0,
             instructions: new_instructions
         }
     }
 
-    pub fn evaluate_value(&self, value: Value) -> u32 {
+    fn evaluate_value(&self, value: Value) -> u32 {
         match value {
             Value::Register(r) => self.registers[r as usize],
             Value::Immediate(i) => i,
         }
     }
     
-    pub fn handle_instruction(&mut self, instruction: Instruction){
+    fn handle_instruction(&mut self, instruction: Instruction){
         macro_rules! math_op {
-            ($lhs:expr, $rhs:expr, $op_type:expr, $op:tt, $dest:expr) => {
-                let lhs = self.evaluate_value($lhs);
-                let rhs = self.evaluate_value($rhs);
-
-                let result = match $op_type {
-                    OpType::Float => (f32::from_bits(lhs) $op f32::from_bits(rhs)).to_bits(),
-                    OpType::Int => (i32::from_bits(lhs) $op i32::from_bits(rhs)).to_bits(),
-                    OpType::UnsignedInt => lhs $op rhs,
-                };
-
-                self.registers[$dest as usize] = result;
-            }
-        }
-
-
-        macro_rules! op2 {
-            ($lhs:expr, $rhs:expr, $op:tt, $dest:expr) => {
-                let lhs = self.evaluate_value($lhs);
-                let rhs = self.evaluate_value($rhs);
-
-                self.registers[$dest as usize] = lhs $op rhs;
+            ($lhs:expr, $rhs:expr, $op_type:expr, $op:tt) => {
+                match $op_type {
+                    OpType::Float => (f32::from_bits($lhs) $op f32::from_bits($rhs)).to_bits(),
+                    OpType::Int => ($lhs as i32 $op $rhs as i32) as u32,
+                    OpType::UnsignedInt => $lhs $op $rhs,
+                }
             }
         }
 
         match instruction {
             Instruction::Nop => {}
-            Instruction::Add {
-                op: MathOp {
-                    lhs,
-                    rhs,
-                    dest,
-                    op_type
-                }
-            } => {
-                math_op!(lhs, rhs, op_type, +, dest)
-            }
-            Instruction::Sub {
-                op: MathOp {
-                    lhs,
-                    rhs,
-                    dest,
-                    op_type
-                }
-            } => {
-                math_op!(lhs, rhs, op_type, -, dest)
-            }
-            Instruction::Mul {
-                op: MathOp {
-                    lhs,
-                    rhs,
-                    dest,
-                    op_type
-                }
-            } => {
-                math_op!(lhs, rhs, op_type, *, dest)
-            }
-            Instruction::Div {
-                op: MathOp {
-                    lhs,
-                    rhs,
-                    dest,
-                    op_type
-                }
-            } => {
-                math_op!(lhs, rhs, op_type, /, dest)
-            }
-            Instruction::Mod {
-                op: MathOp {
-                    lhs,
-                    rhs,
-                    dest,
-                    op_type
-                }
-            } => {
-                math_op!(lhs, rhs, op_type, %, dest)
-            }
-            Instruction::And {
-                op: Operation2 {
-                    lhs,
-                    rhs,
-                    dest,
-                }
-            } => {
-                op2!(lhs, rhs, &, dest)
-            }
-            Instruction::Or {
-                op: Operation2 {
-                    lhs,
-                    rhs,
-                    dest,
-                }
-            } => {
-                op2!(lhs, rhs, |, dest)
-            }
-            Instruction::Xor {
-                op: Operation2 {
-                    lhs,
-                    rhs,
-                    dest,
-                }
-            } => {
-                op2!(lhs, rhs, ^, dest)
-            }
-            Instruction::Not {
-                op: Operation1 {
-                    value,
-                    dest,
-                }
-            } => {
-                let value = self.evaluate_value(value);
+            Instruction::Add { op } |
+            Instruction::Sub { op } |
+            Instruction::Mul { op } |
+            Instruction::Div { op } |
+            Instruction::Mod { op }
+            => {
+                let lhs = self.evaluate_value(op.lhs);
+                let rhs = self.evaluate_value(op.rhs);
+                let res;
 
-                self.registers[dest as usize] = !value;
-            }
-            Instruction::ShiftLeft {
-                op: Operation2 {
-                    lhs,
-                    rhs,
-                    dest,
+                match instruction {
+                    Instruction::Add { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, +);
+                    }
+                    Instruction::Sub { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, -);
+                    }
+                    Instruction::Mul { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, *);
+                    }
+                    Instruction::Div { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, /);
+                    }
+                    Instruction::Mod { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, %);
+                    }
+                    _ => {
+                        unreachable!()
+                    }
                 }
-            } => {
-                op2!(lhs, rhs, <<, dest)
+
+                self.registers[op.dest as usize] = res;
             }
-            Instruction::ShiftRight {
-                op: Operation2 {
-                    lhs,
-                    rhs,
-                    dest,
-                }
-            } => {
-                op2!(lhs, rhs, >>, dest)
+            Instruction::And { op } |
+            Instruction::Or { op } |
+            Instruction::Xor { op } |
+            Instruction::ShiftLeft { op } |
+            Instruction::ShiftRight { op }
+            => {
+                let lhs = self.evaluate_value(op.lhs);
+                let rhs = self.evaluate_value(op.rhs);
+
+                let res = match instruction {
+                    Instruction::And { .. } => {
+                        lhs & rhs
+                    }
+                    Instruction::Or { .. } => {
+                        lhs | rhs
+                    }
+                    Instruction::Xor { .. } => {
+                        lhs ^ rhs
+                    }
+                    Instruction::ShiftLeft { .. } => {
+                        lhs << rhs
+                    }
+                    Instruction::ShiftRight { .. } => {
+                        lhs >> rhs
+                    }
+                    _ => {
+                        unreachable!()
+                    }
+                };
+
+                self.registers[op.dest as usize] = res;
+            }
+            Instruction::Not { op } => {
+                let value = self.evaluate_value(op.value);
+
+                self.registers[op.dest as usize] = !value;
             }
             Instruction::Jump {
                 dest
@@ -222,5 +175,25 @@ impl VirtualMachine {
                 self.registers[dest as usize] = value;
             }
         }
+    }
+
+    pub fn run(&mut self) {
+        loop {
+            let instruction = self.instructions[self.instruction_pointer as usize];
+
+            self.handle_instruction(instruction);
+
+            self.instruction_pointer += 1;
+
+            if self.instruction_pointer >= self.instructions.len() as u32 {
+                break;
+            }
+        }
+    }
+
+    pub fn run_instruction(instruction: Vec<Instruction>) -> Self {
+        let mut vm = VirtualMachine::new(instruction);
+        vm.run();
+        vm
     }
 }
