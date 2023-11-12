@@ -1,18 +1,19 @@
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum Value {
     Register(u8),
     Immediate(u32),
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum OpType {
     Float,
     Int,
     UnsignedInt,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct MathOp {
     pub lhs: Value,
     pub rhs: Value,
@@ -20,20 +21,20 @@ pub struct MathOp {
     pub op_type: OpType
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct Operation2 {
     pub lhs: Value,
     pub rhs: Value,
     pub dest: u8,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct Operation1 {
     pub value: Value,
     pub dest: u8,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum Instruction {
     Nop,
     Add { op: MathOp },
