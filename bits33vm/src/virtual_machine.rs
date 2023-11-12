@@ -1,4 +1,4 @@
-use bits33core::instructions::{Instruction, MathOp, Operation1, Operation2, OpType, Value};
+use bits33core::instructions::{Instruction, OpType, Value};
 
 
 #[derive(Debug)]
