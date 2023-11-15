@@ -1,5 +1,7 @@
 use bits33core::instructions::{Instruction, OpType, Value};
+use bits33core::program::Program;
 
+const STATIC_STRING_MEMORY_SIZE: usize = 64;
 
 #[derive(Debug)]
 pub struct VirtualMachine {
@@ -194,6 +196,27 @@ impl VirtualMachine {
     pub fn run_instruction(instruction: Vec<Instruction>) -> Self {
         let mut vm = VirtualMachine::new(instruction);
         vm.run();
+        vm
+    }
+}
+
+
+impl Into<VirtualMachine> for Program {
+    fn into(self) -> VirtualMachine {
+        let mut vm = VirtualMachine::new(self.instructions);
+
+        let mut store_at = 0;
+        for string in self.strings {
+            for byte in string.as_bytes() {
+                vm.memory[store_at] = *byte;
+                store_at += 1;
+            }
+        }
+
+        if store_at > STATIC_STRING_MEMORY_SIZE {
+            panic!("String memory overflow");
+        }
+
         vm
     }
 }
