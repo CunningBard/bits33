@@ -14,7 +14,7 @@ pub enum OpType {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-pub struct MathOp {
+pub struct Op2wTypes {
     pub lhs: Value,
     pub rhs: Value,
     pub dest: u8,
@@ -22,14 +22,14 @@ pub struct MathOp {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-pub struct Operation2 {
+pub struct Op2 {
     pub lhs: Value,
     pub rhs: Value,
     pub dest: u8,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-pub struct Operation1 {
+pub struct Op1 {
     pub value: Value,
     pub dest: u8,
 }
@@ -37,17 +37,23 @@ pub struct Operation1 {
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum Instruction {
     Nop,
-    Add { op: MathOp },
-    Sub { op: MathOp },
-    Mul { op: MathOp },
-    Div { op: MathOp },
-    Mod { op: MathOp },
-    And { op: Operation2 },
-    Or { op: Operation2 },
-    Xor { op: Operation2 },
-    ShiftLeft { op: Operation2 },
-    ShiftRight { op: Operation2 },
-    Not { op: Operation1 },
+    Add { op: Op2wTypes },
+    Sub { op: Op2wTypes },
+    Mul { op: Op2wTypes },
+    Div { op: Op2wTypes },
+    Mod { op: Op2wTypes },
+    And { op: Op2 },
+    Or { op: Op2 },
+    Xor { op: Op2 },
+    ShiftLeft { op: Op2 },
+    ShiftRight { op: Op2 },
+    Not { op: Op1 },
+    GreaterThanOrEqual { op: Op2wTypes },
+    LessThanOrEqual { op: Op2wTypes },
+    GreaterThan { op: Op2wTypes },
+    LessThan { op: Op2wTypes },
+    Equal { op: Op2 },
+    NotEqual { op: Op2 },
     Jump { dest: u32 },
     JumpIfZero { dest: u32, condition: Value },
     JumpIfNotZero { dest: u32, condition: Value },

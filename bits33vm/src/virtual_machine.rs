@@ -50,7 +50,11 @@ impl VirtualMachine {
             Instruction::Sub { op } |
             Instruction::Mul { op } |
             Instruction::Div { op } |
-            Instruction::Mod { op }
+            Instruction::Mod { op } |
+            Instruction::GreaterThanOrEqual { op } |
+            Instruction::LessThanOrEqual { op } |
+            Instruction::GreaterThan { op } |
+            Instruction::LessThan { op }
             => {
                 let lhs = self.evaluate_value(op.lhs);
                 let rhs = self.evaluate_value(op.rhs);
@@ -72,6 +76,18 @@ impl VirtualMachine {
                     Instruction::Mod { op } => {
                         res = math_op!(lhs, rhs, op.op_type, %);
                     }
+                    Instruction::GreaterThanOrEqual { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, >=);
+                    }
+                    Instruction::LessThanOrEqual { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, <=);
+                    }
+                    Instruction::GreaterThan { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, >);
+                    }
+                    Instruction::LessThan { op } => {
+                        res = math_op!(lhs, rhs, op.op_type, <);
+                    }
                     _ => {
                         unreachable!()
                     }
@@ -83,7 +99,9 @@ impl VirtualMachine {
             Instruction::Or { op } |
             Instruction::Xor { op } |
             Instruction::ShiftLeft { op } |
-            Instruction::ShiftRight { op }
+            Instruction::ShiftRight { op } |
+            Instruction::Equal { op } |
+            Instruction::NotEqual { op}
             => {
                 let lhs = self.evaluate_value(op.lhs);
                 let rhs = self.evaluate_value(op.rhs);
@@ -103,6 +121,12 @@ impl VirtualMachine {
                     }
                     Instruction::ShiftRight { .. } => {
                         lhs >> rhs
+                    }
+                    Instruction::Equal { .. } => {
+                        if lhs == rhs { 1 } else { 0 }
+                    }
+                    Instruction::NotEqual { .. } => {
+                        if lhs != rhs { 1 } else { 0 }
                     }
                     _ => {
                         unreachable!()
