@@ -44,6 +44,22 @@ impl VirtualMachine {
             }
         }
 
+        macro_rules! comp_op {
+            ($lhs:expr, $rhs:expr, $op_type:expr, $op:tt) => {
+                match $op_type {
+                    OpType::Float => {
+                        if { f32::from_bits($lhs) } $op { f32::from_bits($rhs) } { 1 } else { 0 }
+                    }
+                    OpType::Int => {
+                        if { $lhs as i32 } $op { $rhs as i32 } { 1 } else { 0 }
+                    }
+                    OpType::UnsignedInt => {
+                        if $lhs $op $rhs { 1 } else { 0 }
+                    }
+                }
+            }
+        }
+
         match instruction {
             Instruction::Nop => {}
             Instruction::Add { op } |
@@ -58,40 +74,38 @@ impl VirtualMachine {
             => {
                 let lhs = self.evaluate_value(op.lhs);
                 let rhs = self.evaluate_value(op.rhs);
-                let res;
-
-                match instruction {
+                let res = match instruction {
                     Instruction::Add { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, +);
+                        math_op!(lhs, rhs, op.op_type, +)
                     }
                     Instruction::Sub { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, -);
+                        math_op!(lhs, rhs, op.op_type, -)
                     }
                     Instruction::Mul { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, *);
+                        math_op!(lhs, rhs, op.op_type, *)
                     }
                     Instruction::Div { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, /);
+                        math_op!(lhs, rhs, op.op_type, /)
                     }
                     Instruction::Mod { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, %);
+                        math_op!(lhs, rhs, op.op_type, %)
                     }
                     Instruction::GreaterThanOrEqual { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, >=);
+                        comp_op!(lhs, rhs, op.op_type, >=)
                     }
                     Instruction::LessThanOrEqual { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, <=);
+                        comp_op!(lhs, rhs, op.op_type, <=)
                     }
                     Instruction::GreaterThan { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, >);
+                        comp_op!(lhs, rhs, op.op_type, >)
                     }
                     Instruction::LessThan { op } => {
-                        res = math_op!(lhs, rhs, op.op_type, <);
+                        comp_op!(lhs, rhs, op.op_type, <)
                     }
                     _ => {
                         unreachable!()
                     }
-                }
+                };
 
                 self.registers[op.dest as usize] = res;
             }
