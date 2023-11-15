@@ -1,7 +1,23 @@
-//
-// Created by intellij-pest on 2023-11-15
-// b33asm
-// Author: USER
-//
+natural_newline = _{"␍␊" | "\r\n" | "\n"}
+explicit_newline = _{";"}
+new_line = _{natural_newline | explicit_newline}
+line_terminator = _{new_line | EOI}
 
-b33asm = { "Hello World!" }
+WHITESPACE = _{ " " | "\t" }
+
+reg = @{ "r" ~ NUMBER* }
+
+op_type = {
+    "f32" | "i32" | "u32"
+}
+
+mov = {
+    "mov" ~ op_type ~ reg ~ "," ~ reg ~ line_terminator
+}
+
+
+instruction = {
+    mov
+}
+
+program = _{ SOI ~ instruction* ~ EOI}
