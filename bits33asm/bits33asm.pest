@@ -5,18 +5,150 @@ line_terminator = _{new_line | EOI}
 
 WHITESPACE = _{ " " | "\t" }
 
-reg = @{ "r" ~ NUMBER* }
+reg = @{ "r" ~ NUMBER+ }
+float = @{ ("-")? ~ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT+ }
+int = @{ ASCII_DIGIT+ }
+uint = @{ ("-")? ~ ASCII_DIGIT+ }
+
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT)* }
+
+value = _{
+    float | int | uint | reg
+}
+
+jump_able = _{
+    identifier | value
+}
+
+label = {
+    identifier ~ ":"
+}
 
 op_type = {
     "f32" | "i32" | "u32"
 }
 
+nop = {
+    "nop"
+}
+
+add = {
+    reg ~ "<-" ~ op_type ~ value ~ "+" ~ value
+}
+
+sub = {
+    reg ~ "<-" ~ op_type ~ value ~ "-" ~ value
+}
+
+mul = {
+    reg ~ "<-" ~ op_type ~ value ~ "*" ~ value
+}
+
+div = {
+    reg ~ "<-" ~ op_type ~ value ~ "/" ~ value
+}
+
+mod_ = {
+    reg ~ "<-" ~ op_type ~ value ~ "%" ~ value
+}
+
+and = {
+    reg ~ "<-" ~ op_type ~ value ~ "&" ~ value
+}
+
+or = {
+    reg ~ "<-" ~ op_type ~ value ~ "|" ~ value
+}
+
+xor = {
+    reg ~ "<-" ~ op_type ~ value ~ "^" ~ value
+}
+
+shl = {
+    reg ~ "<-" ~ op_type ~ value ~ "<<" ~ value
+}
+
+shr = {
+    reg ~ "<-" ~ op_type ~ value ~ ">>" ~ value
+}
+
+not = {
+    reg ~ "<-" ~ "~" ~ value
+}
+
+gte = {
+    reg ~ "<-" ~ op_type ~ value ~ ">=" ~ value
+}
+
+lte = {
+    reg ~ "<-" ~ op_type ~ value ~ "<=" ~ value
+}
+
+gt = {
+    reg ~ "<-" ~ op_type ~ value ~ ">" ~ value
+}
+
+lt = {
+    reg ~ "<-" ~ op_type ~ value ~ "<" ~ value
+}
+
+eq = {
+    reg ~ "<-" ~ value ~ "==" ~ value
+}
+
+neq = {
+    reg ~ "<-" ~ value ~ "!=" ~ value
+}
+
+jmp = {
+    "jmp" ~ jump_able
+}
+
+jiz = {
+    "jiz" ~ jump_able
+}
+
+jnz = {
+    "jnz" ~ jump_able
+}
+
+load = {
+    "load" ~ value ~ "<-" ~ value
+}
+
+store = {
+    "store" ~ value ~ "<-" ~ value
+}
+
 mov = {
-    "mov" ~ op_type ~ reg ~ "," ~ reg ~ line_terminator
+    reg ~ "<-" ~ value
 }
 
 
-instruction = {
+
+instruction = _{
+    nop   |
+    add   |
+    sub   |
+    mul   |
+    div   |
+    mod_  |
+    and   |
+    or    |
+    xor   |
+    shl   |
+    shr   |
+    not   |
+    gte   |
+    lte   |
+    gt    |
+    lt    |
+    neq   |
+    jmp   |
+    jiz   |
+    jnz   |
+    load  |
+    store |
     mov
 }
 
