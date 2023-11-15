@@ -17,7 +17,7 @@ value = _{
 }
 
 jump_able = _{
-    identifier | value
+    identifier | int
 }
 
 label = {
@@ -52,30 +52,6 @@ mod_ = {
     reg ~ "<-" ~ op_type ~ value ~ "%" ~ value
 }
 
-and = {
-    reg ~ "<-" ~ op_type ~ value ~ "&" ~ value
-}
-
-or = {
-    reg ~ "<-" ~ op_type ~ value ~ "|" ~ value
-}
-
-xor = {
-    reg ~ "<-" ~ op_type ~ value ~ "^" ~ value
-}
-
-shl = {
-    reg ~ "<-" ~ op_type ~ value ~ "<<" ~ value
-}
-
-shr = {
-    reg ~ "<-" ~ op_type ~ value ~ ">>" ~ value
-}
-
-not = {
-    reg ~ "<-" ~ "~" ~ value
-}
-
 gte = {
     reg ~ "<-" ~ op_type ~ value ~ ">=" ~ value
 }
@@ -84,15 +60,35 @@ lte = {
     reg ~ "<-" ~ op_type ~ value ~ "<=" ~ value
 }
 
-gt = {
+gt_ = {
     reg ~ "<-" ~ op_type ~ value ~ ">" ~ value
 }
 
-lt = {
+lt_ = {
     reg ~ "<-" ~ op_type ~ value ~ "<" ~ value
 }
 
-eq = {
+and = {
+    reg ~ "<-" ~ value ~ "&" ~ value
+}
+
+or = {
+    reg ~ "<-" ~ value ~ "|" ~ value
+}
+
+xor = {
+    reg ~ "<-" ~ value ~ "^" ~ value
+}
+
+shl = {
+    reg ~ "<-" ~ value ~ "<<" ~ value
+}
+
+shr = {
+    reg ~ "<-"  ~ value ~ ">>" ~ value
+}
+
+eq_ = {
     reg ~ "<-" ~ value ~ "==" ~ value
 }
 
@@ -100,20 +96,24 @@ neq = {
     reg ~ "<-" ~ value ~ "!=" ~ value
 }
 
+not = {
+    reg ~ "<-" ~ "~" ~ value
+}
+
 jmp = {
     "jmp" ~ jump_able
 }
 
 jiz = {
-    "jiz" ~ jump_able
+    "jiz" ~ jump_able ~ "?" ~ value
 }
 
 jnz = {
-    "jnz" ~ jump_able
+    "jnz" ~ jump_able ~ "?" ~ value
 }
 
 load = {
-    "load" ~ value ~ "<-" ~ value
+    "load" ~ reg ~ "<-" ~ value
 }
 
 store = {
@@ -123,8 +123,6 @@ store = {
 mov = {
     reg ~ "<-" ~ value
 }
-
-
 
 instruction = _{
     nop   |
@@ -141,8 +139,9 @@ instruction = _{
     not   |
     gte   |
     lte   |
-    gt    |
-    lt    |
+    gt_   |
+    lt_   |
+    eq_   |
     neq   |
     jmp   |
     jiz   |
@@ -152,4 +151,8 @@ instruction = _{
     mov
 }
 
-program = _{ SOI ~ instruction* ~ EOI}
+instructions = _{
+    (new_line* ~ instruction ~ new_line?)*
+}
+
+program = _{ SOI ~ instructions ~ EOI}
