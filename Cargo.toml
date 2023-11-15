@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "bits33core",
-    "bits33vm"
+    "bits33vm",
+    "bits33asm",
 ]
