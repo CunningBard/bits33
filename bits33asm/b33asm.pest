@@ -1,0 +1,7 @@
+//
+// Created by intellij-pest on 2023-11-15
+// b33asm
+// Author: USER
+//
+
+b33asm = { "Hello World!" }
