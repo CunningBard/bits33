@@ -8,10 +8,27 @@ use rmp_serde::Serializer;
 use serde::Serialize;
 use bits33core::program::Program;
 
-fn main() {
-    let file = "./bits33asm/test.bits33asm";
+fn main()  {
+    let args = std::env::args().collect::<Vec<String>>();
+    if args.len() < 2 {
+        println!("Usage: bits33asm <program: .b33asm>");
 
-    let instructions = parser::parse_file(file).unwrap();
+        return;
+    }
+
+    println!("Assembling {:?}", args[1]);
+
+    let file = args[1].clone();
+
+    if file.is_empty(){
+        println!("No file given");
+
+        return;
+    }
+
+    let file_name = file.split(".").collect::<Vec<&str>>()[0];
+
+    let instructions = parser::parse_file(&*file).unwrap();
 
     for inst in &instructions {
         println!("{:?}", inst);
@@ -21,5 +38,11 @@ fn main() {
         strings: Vec::new(),
     };
 
-    program.serialize(&mut Serializer::new(std::fs::File::create("./test.bits33exe").unwrap())).unwrap();
+    program.serialize(
+        &mut Serializer::new(
+            std::fs::File::create(
+                format!("{}.b33exe", file_name)
+            ).unwrap()
+        )
+    ).unwrap();
 }
